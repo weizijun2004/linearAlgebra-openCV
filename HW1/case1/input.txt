@@ -1,0 +1,7 @@
+/home/zj/大二上-作業文件/code/linearAlgebra/HW1/case1/info.csv
+/home/zj/大二上-作業文件/code/linearAlgebra/HW1/case1/image.csv
+/home/zj/大二上-作業文件/code/linearAlgebra/HW1/case1/mask.csv
+40
+80
+40
+400
