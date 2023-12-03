@@ -36,6 +36,19 @@ public:
                 cout << fixed << setprecision(2) << matrix[i][q] << ' ';
             cout << endl;
         }
+        cout << endl;
+    }
+    void writeFile(fstream &fs)
+    {
+        for(int m = 0;m < matrix.size(); ++ m)
+        {
+            for(int n = 0;n < matrix[m].size(); ++ n)
+            {
+                if(n == matrix[m].size() - 1)fs << fixed << setprecision(2) << matrix[m][n];
+                else fs << fixed << setprecision(2) << matrix[m][n] << ' ';
+            }
+            fs << endl;
+        }
     }
     vector<vector<double>> getMat(){ return matrix; }
     vector<double> operator*(vector<double> &vec)
@@ -178,7 +191,7 @@ void Projection(string type, vector<Matrix> &matStorage)
 }
 void Rotation(char type, double x, double y, double z, double angle_radians, vector<Matrix> &matStorage)
 {
-    cout << "in R : " << type << endl;
+    // cout << "in R : " << type << endl;
     double c = cos(angle_radians), s = sin(angle_radians);
     if (type == 'x')
         {
@@ -193,7 +206,7 @@ void Rotation(char type, double x, double y, double z, double angle_radians, vec
         }
         else if (type == 'y')
         {
-            cout << "in Ry" << endl;
+            // cout << "in Ry" << endl;
             double matTemp[4][4] = {
                 {c, 0, s, x},
                 {0, 1, 0, y},
@@ -256,8 +269,6 @@ void Shearing(char type, double x, double y, double z, double s, double t, vecto
 
 void readMatrix(string input, vector<Matrix> &matStorage)
 {
-    cout << "in" << endl;
-    cout << "input :" << input << endl;
     stringstream ss;
     // vector<vector<double>> mat;
     // vector<double> vecTemp;
@@ -279,7 +290,6 @@ void readMatrix(string input, vector<Matrix> &matStorage)
     }
     else if (inputTemp[0][1] == 'S')
     {
-        cout << "into S" << endl;
         Trans(stod(inputTemp[1]) * -1, stod(inputTemp[2]) * -1, stod(inputTemp[3]) * -1, matStorage);
         Scaling(
             stod(inputTemp[4]), stod(inputTemp[5]), stod(inputTemp[6]), 
@@ -289,12 +299,10 @@ void readMatrix(string input, vector<Matrix> &matStorage)
     }
     else if (inputTemp[0][1] == 'R')
     {
-        cout << "inside R" << endl;
+        // cout << "inside R" << endl;
         double a = stod(inputTemp[1]), b = stod(inputTemp[2]), c = stod(inputTemp[3]);
         double angle_degrees = stod(inputTemp[4]);
         double angle_radians = angle_degrees * M_PI / 180.0;
-        cout << "angle_radians : " << angle_radians << endl;
-        cout << "cos(60) : " << cos(60 * M_PI / 180.0) << endl;
         Trans(a * -1, b * -1, c * -1, matStorage);
         Rotation(inputTemp[0][2], a, b, c, angle_radians, matStorage);
     }
@@ -362,23 +370,32 @@ vector<vector<double>> inverseMat(vector<vector<double>> mat)
         {0, 0, 1, 0},
         {0, 0, 0, 1}
     };
-    Matrix(ans).print();
+    // Matrix(ans).print();
     for(int i = 0;i < mat[0].size(); ++ i)
     {
+        double devideTemp = mat[i][i];
+        // cout << "i : " << i << endl;
         if(mat[i][i] != 1)
         {
-            for(int q = 0;q < mat[i].size(); ++ q) mat[i][q] /= mat[i][i];
-            for(int q = 0;q < ans[i].size(); ++ q) ans[i][q] /= mat[i][i];
+            for(int q = 0;q < mat[i].size(); ++ q) mat[i][q] /= devideTemp;
+            for(int q = 0;q < ans[i].size(); ++ q) ans[i][q] /= devideTemp;
         }
         for(int q = 0;q < mat.size(); ++ q)
         {
             if(q != i)
             {
-                if(mat[q][0] != 0) 
+                double countTemp = mat[q][i];
+                if(countTemp != 0) 
                 {
-                    Gaus(mat[i], mat[q][0] * -1, mat[q]);
-                    Gaus(ans[i], mat[q][0] * -1, ans[q]);
+                    Gaus(mat[i], countTemp * -1, mat[q]);
+                    Gaus(ans[i], countTemp * -1, ans[q]);
                 }
+                /*
+                cout << "mat : " << devideTemp << endl;
+                Matrix(mat).print();
+                cout << "ans : " << endl;
+                Matrix(ans).print();
+                */
             }
         }
     }
@@ -390,7 +407,9 @@ int main(int argc, char **argv)
 {
     fstream fs;
     // fs.open(argv[1], ios :: in);
-    fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/input1.txt", ios ::in);
+    // fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/input1.txt", ios ::in);
+    // read files
+    fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case3/input1.txt", ios :: in);
     string inputTemp;
     vector<string> input;
     while (getline(fs, inputTemp))
@@ -398,7 +417,7 @@ int main(int argc, char **argv)
         input.push_back(inputTemp);
     }
     fs.close();
-
+    // turn string Vector to double and store in array
     vector<vector<double>> vecStorage;
     stringstream ss;
     vector<double> vecTemp;
@@ -406,15 +425,16 @@ int main(int argc, char **argv)
     {
         string temp = input[i];
         ss << temp;
-        while (getline(ss, temp, ' '))
-            vecTemp.push_back(stod(temp));
+        while (getline(ss, temp, ' ')) vecTemp.push_back(stod(temp));
         vecTemp.push_back(1);
         ss.clear();
         vecStorage.push_back(vecTemp);
         vecTemp.clear();
     }
+    // get the vector that being reverse
     vector<double> reverseVec(vecStorage[vecStorage.size() - 1]);
     vecStorage.pop_back();
+    // read Matrix type, turn the Matrix to double and store in matStorage
     vector<Matrix> matStorage;
     for (int i = 5; i < input.size(); ++i)
     {
@@ -423,7 +443,7 @@ int main(int argc, char **argv)
             readMatrix(input[i], matStorage);
         else if (input[i][0] == '#' && input[i][1] == 'M')
         {
-            cout << "there have M" << endl;
+            // cout << "there have M" << endl;
             stringstream ss;
             vector<vector<double>> mat;
             vector<double> vecTemp;
@@ -447,53 +467,70 @@ int main(int argc, char **argv)
         }
     }
     ///* // test--pass
-    cout << "how many matrix : " << matStorage.size() << endl;
+    // cout << "how many matrix : " << matStorage.size() << endl;
     //*/
-    Matrix mat(matStorage[0]);
-    cout << "###################################" << endl;
+    /*
     for(int i = 0;i < matStorage.size(); ++ i) 
     {
         cout << i << endl;
         matStorage[i].print();
     }
+    */
     // for(Matrix output : matStorage) output.print();
     // (matStorage[matStorage.size() - 1] * matStorage[matStorage.size() - 2]).print();
     ///*
+    // calculate T and 
+    Matrix mat(matStorage[0]);
     for (int q = 1; q < matStorage.size(); ++ q)
     {
         // mat.print();
         mat = matStorage[q] * mat;
     }
-    cout << "T : " << endl;
-    mat.print();
-    cout << "-----------------------------------" << endl;
+    // cout << "-----------------------------------" << endl;
+    // cout << "T : " << endl;
+    // mat.print();
+    // cout << "det : ";
+    // get det of mat
+    double detMat = det(mat);
+    // cout << detMat << endl;
+
+    // to compare old and new volume
     vector<vector<double>> vecAns;
     vector<double> ans;
     for (int i = 0; i < vecStorage.size(); ++i)
     {
         ans = mat * vecStorage[i];
-        cout << "vec ans : " << endl;
-        for(auto t : ans) cout << t << ' ';
-        cout << endl;
         vecAns.push_back(ans);
     }
-    cout << "det : ";
-    cout << det(mat) << endl;
-    cout << vecAns.size() << endl;
     vector<vector<double>> oldPoint = pointToVec(vecStorage);
     vector<vector<double>> newPoint = pointToVec(vecAns);
-    cout << fabs((det(newPoint) / 6) / (det(oldPoint) / 6)) << endl;
-    mat.print();
-    vector<vector<double>> test = inverseMat(mat.getMat());
-    Matrix(test).print();
-    vector<double> d = Matrix(test) * reverseVec;
-    for(auto t : d) cout << t << ' ';
-    cout << endl;
-    vector<double> a = {1, 2, 3, 4}, b = {5, 6, 7, 8};
-    Gaus(a, -2, b);
-    for(auto t : b) cout << t << ' ';
-    cout << endl;
-    for(auto t : a) cout << t << ' ';
+    double r = fabs((det(newPoint) / 6) / (det(oldPoint) / 6));
+
+   //  cout << r << endl;
+    // fs.open(argv[2], ios :: out);
+    // write file
+    fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case3/outputTest1.txt", ios :: out);
+    mat.writeFile(fs);
+    Matrix(vecAns).writeFile(fs);
+    fs << fixed << setprecision(2) << r << ' ' << detMat << endl;
+    if(r == 0 && detMat == 0) fs << "zeros" << endl;
+    else if(round(r * 100) == round(detMat * 100)) fs << "r==det(T)" << endl;
+    else if(round(-1 * r * 100) == round(detMat * 100)) fs << "r==-det(T)" << endl;
+    else fs << "others" << endl;
+    if(detMat != 0)
+    {
+        vector<vector<double>> inMat = inverseMat(mat.getMat());
+        vector<double> inVec = Matrix(inMat) * reverseVec;
+        for(int i = 0;i < inVec.size(); ++ i)
+        {
+            if(i < inVec.size() - 1) fs << fixed << setprecision(2) << inVec[i] << ' ';
+            else fs << fixed << setprecision(2) << inVec[i];
+        }
+    }
+    else fs << "NaN";
+    fs << endl;
+    fs.close();
+
 
     // cout <<det(point) << endl;
     //*/
