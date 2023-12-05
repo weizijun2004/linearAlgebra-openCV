@@ -3,9 +3,9 @@
 #include<fstream>
 #include<sstream>
 #include<cmath>
-#include<opencv2/opencv.hpp>
+// #include<opencv2/opencv.hpp>
 using namespace std;
-using namespace cv;
+// using namespace cv;
 
 /*double[4][4] == double** */
 void testMatrix(double T[4][4]); // test
@@ -27,8 +27,8 @@ void inverseMatrix(double[4][4], double[4][4]);
 
 int main(int argc, char* argv[])
 {
-	string inputPath1 = argv[1], output1 = argv[2], inputPath2 = argv[3], output2 = argv[4];
-	fstream Input(inputPath1, ios::in);
+	// string inputPath1 = argv[1], output1 = argv[2], inputPath2 = argv[3], output2 = argv[4];
+	fstream Input("/home/weizijun/linearAlgebra-openCV/HW2/case1/inputTest.txt", ios::in);
 
 	double v1[4], v2[4], v3[4], v4[4];
 	string tmp;
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 		///*
 		cout << ct << "\n";
 		cout << "tmp[1]:" << tmp[1] << "\n";
-		system("pause");
+		// system("pause");
 		//*/
 
 		if (tmp[1] == 'T')
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 	VecMatrixProduct(v3, T, u3);
 	VecMatrixProduct(v4, T, u4);
 
-	fstream fsout(output1, ios::out);
+	fstream fsout("/home/weizijun/linearAlgebra-openCV/HW2/case2/outputTest1.txt", ios::out);
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
 			cout << fixed << setprecision(2) << T[i][j] << " ";
 		cout << endl;
 	}
-	system("pause");
+	// system("pause");
 	//*/
 	for (int i = 0; i < 4; i++)
 		fsout << fixed << setprecision(2) << u1[i] << " ";
@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
 	for (int i = 0; i < 4; i++)
 		cout << fixed << setprecision(2) << u4[i] << " ";
 	cout << endl;
-	system("pause");
+	// system("pause");
 	//*/
 
 	
@@ -334,7 +334,7 @@ void getParameter(double& value, string& Parameter, stringstream& tmpss)
 	value = stod(tmpStr);
 }
 
-void Translation(double T[4][4], stringstream& ss) // ¥­²¾T
+void Translation(double T[4][4], stringstream& ss) // ï¿½ï¿½ï¿½ï¿½T
 {
 	string Parameter;
 	stringstream tmpss;
@@ -357,7 +357,7 @@ void Translation(double T[4][4], stringstream& ss) // ¥­²¾T
 	testMatrix(T);
 }
 
-void OrthographicProjection(double T[4][4], string type) //§ë¼vP
+void OrthographicProjection(double T[4][4], string type) //ï¿½ï¿½vP
 {
 	string Parameter;
 
@@ -395,7 +395,7 @@ void OrthographicProjection(double T[4][4], string type) //§ë¼vP
 	}
 }
 
-void Scaling(double T[4][4], stringstream& ss) // ÁY©ñS
+void Scaling(double T[4][4], stringstream& ss) // ï¿½Yï¿½ï¿½S
 {
 	string Parameter;
 	stringstream tmpss;
@@ -428,7 +428,7 @@ void Scaling(double T[4][4], stringstream& ss) // ÁY©ñS
 	testMatrix(T);
 }
 
-void Rotation(double T[4][4], string type, stringstream& ss) // ±ÛÂàR
+void Rotation(double T[4][4], string type, stringstream& ss) // ï¿½ï¿½ï¿½ï¿½R
 {
 	string Parameter;
 	stringstream tmpss;
@@ -509,7 +509,7 @@ void Rotation(double T[4][4], string type, stringstream& ss) // ±ÛÂàR
 	}
 }
 
-void Shearing(double T[4][4], string type, stringstream& ss) // ±À²¾H
+void Shearing(double T[4][4], string type, stringstream& ss) // ï¿½ï¿½ï¿½ï¿½H
 {
 	string Parameter;
 	stringstream tmpss;
@@ -582,7 +582,7 @@ void Shearing(double T[4][4], string type, stringstream& ss) // ±À²¾H
 	}
 }
 
-void Customize(double T[4][4], fstream& Input) // ¦Û­qM
+void Customize(double T[4][4], fstream& Input) // ï¿½Û­qM
 {
 	double tmpMatrix[4][4];
 	string Parameter;
@@ -693,7 +693,6 @@ double detT(double** T, int n)
 					}
 				}
 			}
-			
 
 			det += (col % 2 == 0 ? 1 : -1) * T[0][col] * detT(subMatrix, n - 1);
 		
