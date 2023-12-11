@@ -93,6 +93,7 @@ public:
             cerr << exp << endl;
             exit(1);
         }
+
         Matrix matTemp(matrix);
         vector<double> countTemp;
         double numTemp = 0;
@@ -446,10 +447,11 @@ double countInterpolation(vector<vector<int>> eightPoint,vector<double> eightval
         vector<int> fir = eightPoint[i - 1];
         vector<int> sec = eightPoint[i];
         double val;
-        // if(round(v) > v) val = eightvalue[i] * (eightPoint[i][index] - v) + eightvalue[i - 1] * (v - eightPoint[i - 1][index]);
-        // else val = eightvalue[i] * (v - eightPoint[i - 1][index]) + eightvalue[i - 1] * (eightPoint[i][index] - v);
-        val = eightvalue[i] * (eightPoint[i][index] - v) + eightvalue[i - 1] * (v - eightPoint[i - 1][index]);
-        vector<double> nextPoint;
+        double value1 = eightvalue[i], value0 = eightvalue[i - 1], v0 = v - eightPoint[i - 1][index], v1 = eightPoint[i][index] - v;
+        double a1 = value1 * v0, a0 = value0 * v1;
+        //if(round(v) > v) val = eightvalue[i] * (eightPoint[i][index] - v) + eightvalue[i - 1] * (v - eightPoint[i - 1][index]);
+        //else val = eightvalue[i] * (v - eightPoint[i - 1][index]) + eightvalue[i - 1] * (eightPoint[i][index] - v);
+        val = a1 + a0;
         newPointArr.push_back(sec);
         newValue.push_back(val);
     }
@@ -464,7 +466,7 @@ int main(int argc, char **argv)
     // fs.open(argv[1], ios :: in);
     // fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/input1.txt", ios ::in);
     // read files
-    fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/inputTest.txt", ios :: in);
+    fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case1/inputTest.txt", ios :: in);
     string inputTemp;
     vector<string> input;
     while (getline(fs, inputTemp))
@@ -552,7 +554,7 @@ int main(int argc, char **argv)
    //  cout << r << endl;
     // fs.open(argv[2], ios :: out);
     // write file
-    fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/outputTest1.txt", ios :: out);
+    fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case1/outputTest1.txt", ios :: out);
     mat.writeFile(fs);
     Matrix(vecAns).writeFile(fs);
     fs << fixed << setprecision(2) << r << ' ' << detMat << endl;
@@ -579,7 +581,7 @@ int main(int argc, char **argv)
 
     // exit(1);
     // second part
-    fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/input2.txt", ios :: in);
+    fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case1/input2.txt", ios :: in);
     vector<string> input2;
     int row, col, high;
     while(getline(fs, inputTemp)) input2.push_back(inputTemp);
@@ -666,9 +668,9 @@ int main(int argc, char **argv)
         {
             for(int c = 0;c < col; ++ c)
             {
-                vec.push_back(c);
-                vec.push_back(r);
-                vec.push_back(h);
+                vec.push_back(1);
+                vec.push_back(1);
+                vec.push_back(0);
                 vec.push_back(1);
                 vec = inMat2 * vec;
                 // cout << '(';
@@ -680,7 +682,7 @@ int main(int argc, char **argv)
                 getEightPointValue(iniMat, eightPoint, eightPointValue, row, col, high);
                 // for(auto i : eightPointValue) cout << i << endl;
                 cout << countInterpolation(eightPoint, eightPointValue, vec, 0) << ' ';
-                // exit(1);
+                exit(1);
                 // Matrix(eightPoint).print();
 
                 // double r1 = iniMat[eightPoint[0][2]].getMat()[eightPoint[0][0]][eightPoint[0][1]] * (ceil(vec[0]) - vec[0])
