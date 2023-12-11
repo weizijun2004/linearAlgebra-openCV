@@ -411,9 +411,9 @@ void findEightPoint(vector<double> vec, vector<vector<int>> &pointStorage, doubl
         {
             for (int k = 0; k <= 1; ++ k) 
             {
-                int neighboringX = (k) ? floor(vec[0] + 1) : ceil(vec[0] - 1);
-                int neighboringY = (j) ? floor(vec[1] + 1) : ceil(vec[1] - 1);
-                int neighboringZ = (i) ? floor(vec[2] + 1) : ceil(vec[2] - 1);
+                int neighboringX = (k) ? floor(vec[0] + 1) : (floor(vec[0]) == ceil(vec[0])) ? vec[0] : ceil(vec[0] - 1);
+                int neighboringY = (j) ? floor(vec[1] + 1) : (floor(vec[1]) == ceil(vec[1])) ? vec[1] : ceil(vec[1] - 1);
+                int neighboringZ = (i) ? floor(vec[2] + 1) : (floor(vec[2]) == ceil(vec[2])) ? vec[2] : ceil(vec[2] - 1);
                 // std::cout << "相邻坐标：" << "(" << neighboringX << ", " << neighboringY << ", " << neighboringZ << ")" << std::endl;
                 vector<int> temp;
                 temp.push_back(neighboringX);
@@ -448,9 +448,8 @@ double countInterpolation(vector<vector<int>> eightPoint,vector<double> eightval
         vector<int> sec = eightPoint[i];
         double val;
         double value1 = eightvalue[i], value0 = eightvalue[i - 1], v0 = v - eightPoint[i - 1][index], v1 = eightPoint[i][index] - v;
+        // double value1 = eightvalue[i], value0 = eightvalue[i - 1], v0 = eightPoint[i - 1][index] / v, v1 =v / eightPoint[i][index] ;
         double a1 = value1 * v0, a0 = value0 * v1;
-        //if(round(v) > v) val = eightvalue[i] * (eightPoint[i][index] - v) + eightvalue[i - 1] * (v - eightPoint[i - 1][index]);
-        //else val = eightvalue[i] * (v - eightPoint[i - 1][index]) + eightvalue[i - 1] * (eightPoint[i][index] - v);
         val = a1 + a0;
         newPointArr.push_back(sec);
         newValue.push_back(val);
@@ -463,10 +462,10 @@ double countInterpolation(vector<vector<int>> eightPoint,vector<double> eightval
 int main(int argc, char **argv)
 {
     fstream fs;
-    // fs.open(argv[1], ios :: in);
-    // fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/input1.txt", ios ::in);
+    fs.open(argv[1], ios :: in);
+    // fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/inputTest.txt", ios ::in);
     // read files
-    fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case1/inputTest.txt", ios :: in);
+    //fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case1/inputTest.txt", ios :: in);
     string inputTemp;
     vector<string> input;
     while (getline(fs, inputTemp))
@@ -552,9 +551,10 @@ int main(int argc, char **argv)
     double r = fabs((det(newPoint) / 6) / (det(oldPoint) / 6));
 
    //  cout << r << endl;
-    // fs.open(argv[2], ios :: out);
+    fs.open(argv[2], ios :: out);
     // write file
-    fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case1/outputTest1.txt", ios :: out);
+    // fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case1/outputTest1.txt", ios :: out);
+    // fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/outputTest1.txt", ios ::in);
     mat.writeFile(fs);
     Matrix(vecAns).writeFile(fs);
     fs << fixed << setprecision(2) << r << ' ' << detMat << endl;
@@ -581,10 +581,13 @@ int main(int argc, char **argv)
 
     // exit(1);
     // second part
-    fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case1/input2.txt", ios :: in);
+    // fs.open("/home/weizijun/linearAlgebra-openCV/HW2/case1/input2.txt", ios :: in);
+    // fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/input2.txt", ios ::in);
+    fs.open(argv[3], ios :: in);
     vector<string> input2;
     int row, col, high;
     while(getline(fs, inputTemp)) input2.push_back(inputTemp);
+    fs.close();
     ss << input2[0];
     for(int i = 0;getline(ss, inputTemp, ' '); ++ i)
     {
@@ -662,15 +665,17 @@ int main(int argc, char **argv)
     vector<double> vec;
     vector<vector<int>> eightPoint;
     vector<double> eightPointValue;
+    // fs.open("/home/zj/大二上-作業文件/code/linearAlgebra/HW2/case1/outputTest2.txt", ios :: out);
+    fs.open(argv[4], ios :: out);
     for(int h = 0;h < high; ++ h)
     {
         for(int r = 0;r < row; ++ r)
         {
             for(int c = 0;c < col; ++ c)
             {
-                vec.push_back(1);
-                vec.push_back(1);
-                vec.push_back(0);
+                vec.push_back(r);
+                vec.push_back(c);
+                vec.push_back(h);
                 vec.push_back(1);
                 vec = inMat2 * vec;
                 // cout << '(';
@@ -681,52 +686,23 @@ int main(int argc, char **argv)
                 // for(auto i : eightPoint) cout << i[0] << ' ' << i[1] << ' ' << i[2] << endl;
                 getEightPointValue(iniMat, eightPoint, eightPointValue, row, col, high);
                 // for(auto i : eightPointValue) cout << i << endl;
-                cout << countInterpolation(eightPoint, eightPointValue, vec, 0) << ' ';
-                exit(1);
-                // Matrix(eightPoint).print();
-
-                // double r1 = iniMat[eightPoint[0][2]].getMat()[eightPoint[0][0]][eightPoint[0][1]] * (ceil(vec[0]) - vec[0])
-                //             + iniMat[eightPoint[1][2]].getMat()[eightPoint[1][0]][eightPoint[1][1]] * (vec[0] - floor(vec[0]));
-                // double r2 = iniMat[eightPoint[2][2]].getMat()[eightPoint[2][0]][eightPoint[2][1]] * (ceil(vec[0]) - vec[0])
-                //             + iniMat[eightPoint[3][2]].getMat()[eightPoint[3][0]][eightPoint[3][1]] * (vec[0] - floor(vec[0]));
-                // double r3 = iniMat[eightPoint[4][2]].getMat()[eightPoint[4][0]][eightPoint[4][1]] * (ceil(vec[0]) - vec[0])
-                //             + iniMat[eightPoint[5][2]].getMat()[eightPoint[5][0]][eightPoint[5][1]] * (vec[0] - floor(vec[0]));
-                // double r4 = iniMat[eightPoint[6][2]].getMat()[eightPoint[6][0]][eightPoint[6][1]] * (ceil(vec[0]) - vec[0])
-                //             + iniMat[eightPoint[7][2]].getMat()[eightPoint[7][0]][eightPoint[7][1]] * (vec[0] - floor(vec[0]));
-                // double rr1 = r1 * (ceil(vec[1]) - vec[1]) + r2 * (vec[1] - floor(vec[1]));
-                // double rr2 = r3 * (ceil(vec[1]) - vec[1]) + r4 * (vec[1] - floor(vec[1]));
-                // double ans = rr1 * (ceil(vec[2]) - vec[2]) + rr2 * (vec[2] - floor(vec[2]));
-                // cout << ans << ' ';
+                int ans = floor(countInterpolation(eightPoint, eightPointValue, vec, 0));
+                cout << ans << ' ';
+                (c == col - 1) ? fs << ans : fs << ans << ' ' ;
                 // exit(1);
 
-                // double f000 = (iniMat[eightPoint[0][2]].getMat())[eightPoint[0][0]][eightPoint[0][1]];
-                
-                // double pointValue = (1 - w) * (1 - v) * (1 - u) * (iniMat[eightPoint[0][2]].getMat())[eightPoint[0][0]][eightPoint[0][1]]
-                //                     + (1 - w) * (1 - v) * u * (iniMat[eightPoint[1][2]].getMat())[eightPoint[1][0]][eightPoint[1][1]]
-                //                     + (1 - w) * v * (1 - u) * (iniMat[eightPoint[2][2]].getMat())[eightPoint[2][0]][eightPoint[2][1]]
-                //                     + (1 - w) * v * u * (iniMat[eightPoint[3][2]].getMat())[eightPoint[3][0]][eightPoint[3][1]]
-                //                     + w * (1 - v) * (1 - u) * (iniMat[eightPoint[4][2]].getMat())[eightPoint[4][0]][eightPoint[4][1]]
-                //                     + w * (1 - v) * u * (iniMat[eightPoint[5][2]].getMat())[eightPoint[5][0]][eightPoint[5][1]]
-                //                     + w * v * (1 - u) * (iniMat[eightPoint[6][2]].getMat())[eightPoint[6][0]][eightPoint[6][1]]
-                //                     + w * v * u * (iniMat[eightPoint[7][2]].getMat())[eightPoint[7][0]][eightPoint[7][1]];
-                // cout << pointValue << ' ';
-                
-                // vector<double> temp = inMat2 * vec;
-                // for(double t : temp) cout << t << ' ';
-                // cout << endl;
                 eightPoint.clear();
                 eightPointValue.clear();
                 vec.clear();
                 // exit(1);
             }
             cout << endl;
+            fs << endl;
         }
         // cout << endl;
     }
-    
 
-    // cout <<det(point) << endl;
-    //*/
+
 }
 
 
