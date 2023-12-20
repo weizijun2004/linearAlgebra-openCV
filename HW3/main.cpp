@@ -22,9 +22,9 @@ int main(int argc, char **argv)
 
 	Mat inputImage = imread(argv[1], 1);
 	cout << inputImage.size();
-	Mat grayImage;
+	Mat blurImage, grayImage;
 	// to blur the image
-	GaussianBlur(inputImage, inputImage, cv::Size(9, 9), 0);
+	// GaussianBlur(inputImage, blurImage, cv::Size(9, 9), 0);
 	// turn image to gray
 	cvtColor(inputImage, grayImage, COLOR_BGR2GRAY);
 	Mat binaryImage;
@@ -57,10 +57,7 @@ int main(int argc, char **argv)
 	}
 	*/
 	// four corners point and inisialize it to the middle
-	Point upright(500, 500),
-		upleft(500, 500),
-		buttomleft(500, 500),
-		buttomright(500, 500);
+	Point upright(500, 500), upleft(500, 500), buttomleft(500, 500), buttomright(500, 500);
 	for (int i = 0; i < newContours.size(); ++ i)
 	{
 		for (Point p : newContours[i])
@@ -70,7 +67,6 @@ int main(int argc, char **argv)
 			else if (p.x > upright.x && p.y < upright.y) upright = p;
 			else if (p.x < buttomleft.x && p.y > buttomleft.y) buttomleft = p;
 			else if (p.x > buttomright.x && p.y > buttomright.y) buttomright = p;
-			// break;
 		}
 	}
 	cout << newContours[0][0].x << ' ' << newContours[0][0].y << endl;
@@ -92,10 +88,31 @@ int main(int argc, char **argv)
 		}
 	}
 	for (auto i : cornerContours[0]) cout << i << endl;
-	drawContours(noImage, cornerContours, -1, Scalar(0, 0, 255), 1);
+	cout << inputImage.size() << endl;
+	vector<Point2f> cornerPoint;
+	cornerPoint.push_back(upleft);
+	cornerPoint.push_back(upright);
+	cornerPoint.push_back(buttomleft);
+	cornerPoint.push_back(buttomright);
+	vector<Point2f> detPoint;
+	detPoint.push_back(Point(0, 0));
+	detPoint.push_back(Point(1107, 0));
+	detPoint.push_back(Point(0, 1476));
+	detPoint.push_back(Point(1107, 1476));
+	Mat rotaMat = getPerspectiveTransform(cornerPoint, detPoint);
+	// circle(inputImage, upleft, 5, Scalar(0, 0, 255), -1);
+	// circle(inputImage, buttomright, 5, Scalar(0, 0, 255), -1);
+	// circle(inputImage, upright, 5, Scalar(0, 0, 255), -1);
+	// circle(inputImage, buttomleft, 5, Scalar(0, 0, 255), -1);
+	// circle(inputImage, detPoint[0], 5, Scalar(0, 255, 0), -1);
+	// circle(inputImage, detPoint[1], 5, Scalar(0, 255, 0), -1);
+	// circle(inputImage, detPoint[2], 5, Scalar(0, 255, 0), -1);
+	// circle(inputImage, detPoint[3], 5, Scalar(0, 255, 0), -1);
+	warpPerspective(inputImage, inputImage, rotaMat, inputImage.size());
+	// drawContours(noImage, cornerContours, -1, Scalar(0, 0, 255), 1);
 
 	// cout << "contours size : "  << contours.size() << endl;
 	// cout << "square contours size : " << squareContours.size() << endl;
-	imwrite(argv[2], noImage);
+	imwrite(argv[2], inputImage);
 	waitKey(0);
 }
