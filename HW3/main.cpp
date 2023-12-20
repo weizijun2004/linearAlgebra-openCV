@@ -1,16 +1,31 @@
-#include<iostream>
+ï»¿#include<iostream>
 #include<fstream>
 #include<vector>
 #include<opencv2/opencv.hpp>
 using namespace std;
 using namespace cv;
+
+bool isContourAllBlack(vector<Point>& contour, Mat& binaryImage) {
+	for (Point& point : contour) {
+		uchar pixelValue = binaryImage.at<uchar>(point.y, point.x);  // æ³¨æ„è¿™é‡Œçš„é¡ºåº
+
+		if (pixelValue != 255) {
+			// cout << "pixelValue : " << (int)pixelValue << endl;
+			return false;
+		}
+	}
+	return true;
+}
+
 int main(int argc, char **argv)
 {
 
 	Mat inputImage = imread(argv[1], 1);
 	cout << inputImage.size();
 	Mat grayImage;
-	GaussianBlur(inputImage, inputImage, cv::Size(5, 5), 0);
+	// to blur the image
+	GaussianBlur(inputImage, inputImage, cv::Size(9, 9), 0);
+	// turn image to gray
 	cvtColor(inputImage, grayImage, COLOR_BGR2GRAY);
 	Mat binaryImage;
 	vector<vector<double>> temp;
@@ -18,65 +33,67 @@ int main(int argc, char **argv)
 	for (int i = 0; i < temp.size(); ++i) temp[i].resize(binaryImage.cols);
 
 	Mat noImage(1477, 1108, CV_8UC1, Scalar(255));
-	// threshold(grayImage, noImage, 0, 255, cv::THRESH_BINARY);
-	threshold(grayImage, binaryImage, 130, 255, cv::THRESH_BINARY);
+	// to Binarization the image, >100 -> 255, <100 -> 0;
+	threshold(grayImage, binaryImage, 100, 255, cv::THRESH_BINARY);
 	vector<vector<Point>> contours;
-	vector<Vec4i> point;
+	// find all contours in iamge
 	findContours(binaryImage, contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
-
 	vector<vector<Point>> newContours;
-	for (int i = 0; i < contours.size(); ++i) {
-		if (contourArea(contours[i]) > 200 && arcLength(contours[i], false) < 200)
+	// turn image num type to uchar
+	binaryImage.convertTo(binaryImage, CV_8UC1);
+	for (int i = 0; i < contours.size(); i++) 
+	{
+		// find the contours that all black and also in the range of area and length 
+		if (isContourAllBlack(contours[i], binaryImage) && contourArea(contours[i]) > 200 && arcLength(contours[i], true) < 200)
 		{
+			// cout << "all black ! " << endl;
 			newContours.push_back(contours[i]);
-			cout << i << " : " << contourArea(contours[i]) << endl;
 		}
 	}
-	vector<Point> min_x_max_y, max_x_max_y, min_x_min_y, max_x_min_y;
-
-	// ªì©l¤Æ³o¨ÇÅÜ¼Æ¡A¥H½T«O¦³¨¬°÷ªºÂI¥i¥H¶i¦æ¤ñ¸û
-	min_x_max_y = newContours[0];
-	min_x_min_y = newContours[0];
-	max_x_min_y = newContours[0];
-	max_x_max_y = newContours[0];
-
-	// ¹M¾ú©Ò¦³ªºcontours¡A§ä¥X²Å¦X±ø¥óªºÂI
-	for (const auto& contour : newContours) {
-		for (const auto& point : contour) {
-			// §ä¥Xx¶b³Ì¤p¥By¶b³Ì¤jªºÂI
-			if (point.x <= min_x_max_y[0].x && point.y >= min_x_max_y[0].y) {
-				min_x_max_y = contour;
-				cout << "0" << endl;
-			}
-
-			// §ä¥Xx¶b³Ì¤j¥By¶b³Ì¤jªºÂI
-			if (point.x >= max_x_max_y[0].x && point.y >= max_x_max_y[0].y) {
-				max_x_max_y = contour;
-				cout << "1" << endl;
-			}
-
-			// §ä¥Xx¶b³Ì¤p¦P®Éy¶b³Ì¤pªºÂI
-			if (point.x <= min_x_min_y[0].x && point.y <= min_x_min_y[0].y) {
-				min_x_min_y = contour;
-				cout << "2" << endl;
-			}
-
-			// §ä¥Xx¶b³Ì¤j¦P®Éy¶b³Ì¤pªºÂI
-			if (point.x >= max_x_min_y[0].x && point.y <= max_x_min_y[0].y) {
-				max_x_min_y = contour;
-				cout << "3" << endl;
-			}
+	/*
+	cout << "newContours size : " << newContours.size() << endl;
+	for (int i = 0; i < newContours.size(); ++i) {
+		cout << "area size : " << i << ' ' << contourArea(newContours[i]) << endl;
+	}
+	*/
+	// four corners point and inisialize it to the middle
+	Point upright(500, 500),
+		upleft(500, 500),
+		buttomleft(500, 500),
+		buttomright(500, 500);
+	for (int i = 0; i < newContours.size(); ++ i)
+	{
+		for (Point p : newContours[i])
+		{
+			// cout << p << endl;
+			if (p.x < upleft.x && p.y < upleft.y) upleft = p;
+			else if (p.x > upright.x && p.y < upright.y) upright = p;
+			else if (p.x < buttomleft.x && p.y > buttomleft.y) buttomleft = p;
+			else if (p.x > buttomright.x && p.y > buttomright.y) buttomright = p;
+			// break;
 		}
 	}
-	vector<vector<Point>> squareContours;
-	squareContours.push_back(max_x_max_y);
-	squareContours.push_back(max_x_min_y);
-	squareContours.push_back(min_x_max_y);
-	squareContours.push_back(min_x_min_y);
-	for(int i = 0;i < squareContours.size(); ++ i) cout << i << " : " << contourArea(squareContours[i]) << endl;
-	cout << "size : " << noImage.size() << endl;
-	// Mat resultImage;
-	drawContours(noImage, squareContours, -1, Scalar(0, 0, 255), 1);
+	cout << newContours[0][0].x << ' ' << newContours[0][0].y << endl;
+	cout << newContours[0][0] << endl;
+	cout << newContours[0].size() << endl;
+	cout << "----------------------------------" << endl;
+	cout << upleft << endl;
+	cout << upright << endl;
+	cout << buttomleft << endl;
+	cout << buttomright << endl;
+	vector<vector<Point>> cornerContours;
+	
+	// find corners contours
+	for (int i = 0; i < newContours.size(); ++i)
+	{
+		for (Point p : newContours[i])
+		{
+			if (p == upleft || p == upright || p == buttomleft || p == buttomright) cornerContours.push_back(newContours[i]);
+		}
+	}
+	for (auto i : cornerContours[0]) cout << i << endl;
+	drawContours(noImage, cornerContours, -1, Scalar(0, 0, 255), 1);
+
 	// cout << "contours size : "  << contours.size() << endl;
 	// cout << "square contours size : " << squareContours.size() << endl;
 	imwrite(argv[2], noImage);
