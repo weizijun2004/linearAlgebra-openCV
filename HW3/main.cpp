@@ -22,20 +22,6 @@ bool isContourAllBlack(vector<Point>& contour, Mat& binaryImage)
 }
 */
 ///*
-bool isContourAllBlack(vector<Point>& contour, Mat& binaryImage)
-{
-	double blackPoint = 0, notBlackPoint = 0;
-	for (Point& point : contour) {
-		uchar pixelValue = binaryImage.at<uchar>(point.y, point.x);  // 注意这里的顺序
-
-		if (pixelValue != 255) notBlackPoint++;
-		else blackPoint++;
-	}
-	// cout << (blackPoint / (blackPoint + notBlackPoint)) << endl;
-	if (blackPoint > 0 && blackPoint / (blackPoint + notBlackPoint) > 0.8) return true;
-
-	return false;
-}
 int whichChoose(vector<Point> ct)
 {
 	for (Point p : ct)
@@ -108,7 +94,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < contours.size(); i++) 
 	{
 		// find the contours that all black and also in the range of area and length 
-		if (isContourAllBlack(contours[i], binaryImage) && contourArea(contours[i]) > 200 && arcLength(contours[i], true) < 200)
+		if (contourArea(contours[i]) > 100 && arcLength(contours[i], true) < 100)
 		{
 			// cout << "all black ! " << endl;
 			newContours.push_back(contours[i]);
@@ -226,7 +212,9 @@ int main(int argc, char **argv)
 	cvtColor(blurImage, grayImage, COLOR_BGR2GRAY);
 	threshold(grayImage, binaryImage, 120, 255, cv::THRESH_BINARY);
 	findContours(binaryImage, contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
-	circle(inputImage, Point(225, 1350), 4, Scalar(0, 0, 255), -1);
+	circle(inputImage, Point(235, 540), 4, Scalar(0, 0, 255), -1);
+	circle(inputImage, Point(970, 540), 4, Scalar(0, 0, 255), -1);
+	circle(inputImage, Point(235, 1300), 4, Scalar(0, 0, 255), -1);
 	circle(inputImage, Point(275, 615), 4, Scalar(0, 0, 255), -1);
 	circle(inputImage, Point(340, 615), 4, Scalar(0, 0, 255), -1);
 	circle(inputImage, Point(400, 615), 4, Scalar(0, 0, 255), -1);
@@ -272,7 +260,7 @@ int main(int argc, char **argv)
 		for (Point p : ct)
 		{
 			if (p.x > 225 && p.y > 550 && p.y < 1350 && arcLength(ct, true) < 100
-				&& contourArea(ct) > 70 && isContourAllBlack(ct, binaryImage) && inXRange(ct))
+				&& contourArea(ct) > 70 && inXRange(ct))
 			{
 				ansContours.push_back(ct);
 				break;
@@ -302,6 +290,8 @@ int main(int argc, char **argv)
 	cout << "edge size : " << edgeContours.size() << endl;
 	vector<int> ans;
 	vector<int> chooseArr;
+	vector<Point> contoursShape;
+	vector<vector<Point>> contoursShapeArr;
 	for (int i = 0;i < edgeContours.size(); ++ i)
 	{
 		bool multiChoose = false;
@@ -312,13 +302,18 @@ int main(int argc, char **argv)
 			{
 				if (p.y > minPointArr[i].y && p.y < maxPointArr[i].y)
 				{
-					if ((double)(min(p.y - minPointArr[i].y, maxPointArr[i].y - p.y)) / (double)(max(p.y - minPointArr[i].y, maxPointArr[i].y - p.y)) <= 0.8) continue;
-					cout << (double)(min(p.y - minPointArr[i].y, maxPointArr[i].y - p.y)) / (double)(max(p.y - minPointArr[i].y, maxPointArr[i].y - p.y)) << endl;
+					// if ((double)(min(p.y - minPointArr[i].y, maxPointArr[i].y - p.y)) / (double)(max(p.y - minPointArr[i].y, maxPointArr[i].y - p.y)) <= 0.8) continue;
+					// cout << (double)(min(p.y - minPointArr[i].y, maxPointArr[i].y - p.y)) / (double)(max(p.y - minPointArr[i].y, maxPointArr[i].y - p.y)) << endl;
+					approxPolyDP(ct, contoursShape, 2, true);
+					contoursShapeArr.push_back(contoursShape);
+					cout << "edge num : " << contoursShape.size() << endl;
+					if (!isContourConvex(contoursShape) && contoursShape.size() > 2 ) break;
 					temp++;
 					if(!multiChoose) chooseArr.push_back(whichChoose(ct));
 					multiChoose = true;
 					break;
 				}
+				
 			}
 		}
 		if (temp == 0) chooseArr.push_back(-1);
@@ -343,9 +338,10 @@ int main(int argc, char **argv)
 	// for (int output : ans) cout << "ans : " << output << endl;
 
 	cout << "choose arr size : " << chooseArr.size() << endl;
-	drawContours(noImage, ansContours, -1, Scalar(0, 0, 255), 1);
+	cvtColor(binaryImage, binaryImage, COLOR_BayerBG2BGR);
+	drawContours(noImage, ansContours, -1, Scalar(0, 255, 0), -1);
 	// for(int i = 0, num = 600;i < 10; ++ i, num += 30) circle(inputImage, Point(100, num + i), 10, Scalar(0, 0, 255), -1);
-	imwrite(argv[3], binaryImage);
+	imwrite(argv[3], noImage);
 	waitKey(0);
 	fstream fs;
 	fs.open(argv[2], ios::out);
