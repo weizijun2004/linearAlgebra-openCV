@@ -6,7 +6,7 @@
 #include<opencv2/opencv.hpp>
 using namespace std;
 using namespace cv;
-/*
+
 bool isContourAllBlack(vector<Point>& contour, Mat& binaryImage) 
 {
 
@@ -20,7 +20,7 @@ bool isContourAllBlack(vector<Point>& contour, Mat& binaryImage)
 	}
 	return true;
 }
-*/
+
 ///*
 int whichChoose(vector<Point> ct)
 {
@@ -259,8 +259,8 @@ int main(int argc, char **argv)
 	{
 		for (Point p : ct)
 		{
-			if (p.x > 225 && p.y > 550 && p.y < 1350 && arcLength(ct, true) < 100
-				&& contourArea(ct) > 70 && inXRange(ct))
+			if (p.x > 225 && p.y > 550 && p.y < 1350 && arcLength(ct, true) < 95
+				&& contourArea(ct) > 55 && inXRange(ct) && isContourAllBlack(ct, binaryImage))
 			{
 				ansContours.push_back(ct);
 				break;
@@ -292,6 +292,7 @@ int main(int argc, char **argv)
 	vector<int> chooseArr;
 	vector<Point> contoursShape;
 	vector<vector<Point>> contoursShapeArr;
+	// sort(ansContours.begin(), ansContours.end(), [](vector<Point> a, vector<Point> b) { return a[0].y < b[0].y; });
 	for (int i = 0;i < edgeContours.size(); ++ i)
 	{
 		bool multiChoose = false;
@@ -313,7 +314,6 @@ int main(int argc, char **argv)
 					multiChoose = true;
 					break;
 				}
-				
 			}
 		}
 		if (temp == 0) chooseArr.push_back(-1);
@@ -339,9 +339,9 @@ int main(int argc, char **argv)
 
 	cout << "choose arr size : " << chooseArr.size() << endl;
 	cvtColor(binaryImage, binaryImage, COLOR_BayerBG2BGR);
-	drawContours(noImage, ansContours, -1, Scalar(0, 255, 0), -1);
+	drawContours(binaryImage, ansContours, -1, Scalar(0, 255, 0), 1);
 	// for(int i = 0, num = 600;i < 10; ++ i, num += 30) circle(inputImage, Point(100, num + i), 10, Scalar(0, 0, 255), -1);
-	imwrite(argv[3], noImage);
+	imwrite(argv[3], binaryImage);
 	waitKey(0);
 	fstream fs;
 	fs.open(argv[2], ios::out);
